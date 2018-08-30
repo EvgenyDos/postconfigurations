@@ -1,0 +1,48 @@
+---
+- name: 3.6.5 Ensure firewall rules exist for all open ports
+  iptables:
+    chain: INPUT
+    in_interface: mgmt0
+    protocol: tcp
+    match: tcp
+    ctstate: new
+    destination_port: 22
+    comment: Allow SSH Accesss to port 22
+  tags:
+    - iptables
+
+- name: 3.6.5 Ensure firewall rules exist for all open ports
+  iptables:
+    chain: INPUT
+    in_interface: mgmt0
+    protocol: tcp
+    match: tcp
+    ctstate: new
+    destination_port: 3022
+    comment: Allow Teleport SSH Accesss to port 3022
+  tags:
+    - iptables
+
+- name: 3.6.5 Ensure firewall rules exist for all open ports
+  iptables:
+    chain: INPUT
+    in_interface: mgmt0
+    protocol: tcp
+    match: tcp
+    ctstate: new
+    destination_port: 9100
+    comment: Allow Prometheus Client access to 9100
+  tags:
+    - iptables
+
+- name: 3.6.5 Ensure firewall rules exist for all open ports
+  iptables:
+    chain: INPUT
+    in_interface: mgmt0
+    protocol: tcp
+    match: tcp
+    ctstate: new
+    destination_port: 16514
+    comment: Allow libvirt access to port 16514
+  tags:
+    - iptables

@@ -1,0 +1,47 @@
+---
+- name: Add users | create users, shell, home dirs
+  user:
+    name: "{{ item.username }}"
+    shell: /bin/bash
+    createhome: true
+    groups: wheel
+    comment: "IPI team member {{ item.username }} create with ansible"
+  with_items:
+    - "{{ users }}"
+  tags:
+    - users
+
+- name: Create .ssh directory
+  file:
+    path: /home/{{ item.username }}/.ssh
+    owner: "{{ item.username }}"
+    group: "{{ item.username }}"
+    mode: 0755
+    state: directory
+  with_items:
+    - "{{ users }}"
+  tags:
+    - users
+
+- name: Setup | authorized key upload
+  copy:
+    dest: "/home/{{ item.username }}/.ssh/authorized_keys"
+    content: "{{ item.pub_key }}"
+    owner: "{{ item.username }}"
+    group: "{{ item.username }}"
+    mode: 0644
+  with_items:
+    - "{{ users }}"
+  tags:
+    - users
+
+- name: "Allow ipi user to sudo without a password"
+  lineinfile:
+    dest: "/etc/sudoers"
+    state: "present"
+    regexp: "^%ipi"
+    line: "%{{ item.username }} ALL=(ALL) NOPASSWD: ALL"
+  with_items:
+    - "{{ users }}"
+  tags:
+    - users

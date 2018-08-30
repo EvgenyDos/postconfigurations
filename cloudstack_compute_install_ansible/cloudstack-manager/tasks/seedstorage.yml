@@ -1,0 +1,17 @@
+- name: Ensure secondary storage mount exists
+  file: path={{ tmp\_nfs\_path }} state=directory
+
+
+- name: Ensure  NFS storage is mounted
+  mount: name={{ tmp\_nfs\_path }} src={{ sec\_nfs\_ip }}:{{sec\_nfs\_path }} fstype=nfs state=mounted opts=nolock
+
+
+- name: Seed secondary storage
+  command:
+/usr/share/cloudstack-common/scripts/storage/secondary/cloud-install-sys-tmplt -m {{ tmp\_nfs\_path }} -u https://download.cloudstack.org/templates/4.2/systemvmtemplate-2013-06-12-master-kvm.qcow2.bz2 -h kvm -F
+
+  command:
+/usr/share/cloudstack-common/scripts/storage/secondary/cloud-install-sys-tmplt -m {{ tmp\_nfs\_path }} -u https://download.cloudstack.org/templates/4.2/systemvmtemplate-2013-07-12-master-xen.vhd.bz2 -h xenserver -F
+
+  command:
+/usr/share/cloudstack-common/scripts/storage/secondary/cloud-install-sys-tmplt -m {{ tmp\_nfs\_path }} -u https://download.cloudstack.org/templates/4.2/systemvmtemplate-4.2-vh7.ov -h vmware -F

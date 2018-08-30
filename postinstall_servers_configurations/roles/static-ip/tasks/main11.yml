@@ -1,0 +1,26 @@
+---
+#- name: Setup networking (resolv.conf)
+#  template: owner=root group=root mode=644 
+#   src=/etc/ansible/templates/resolv.conf 
+#   dest=/etc/resolv.conf
+
+#- name: Get the host IP
+#  shell: echo {{ ansible_fqdn }} > /tmp/1
+#  register: host_sh
+#- debug: msg="{{ host_sh.stdout }}"
+
+- name: Setup networking (interfaces)
+  template:
+     owner: root
+     group: root
+     mode: 0644
+     src: ../../../templates/ifcfg-interface
+     dest: /etc/sysconfig/network-scripts/ifcfg-{{ item }}
+#  with_items: "{{ net_interfaces }}"
+  with_items: "{{ interface }}"
+ 
+
+# cat /etc/ansible/templates/ifcfg-interface 
+
+#- name: Restart Network
+#  service: name=network state=restarted

@@ -1,0 +1,12 @@
+[Unit]
+Description=Runs akfgen client
+ConditionPathExists=/etc/akfgen.yml
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/akfgen -config /etc/akfgen.yml
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+IPADDR={{ ansible_eth1.ipv4.address }}
+NETMASK={{ ansible_eth1.ipv4.netmask }} 
+BOOTPROTO="static"
+DEVICE={{ansible_eth1.device}}
+ONBOOT=yes
+TYPE=Ethernet
+DEFROUTE=yes
+PEERDNS=no
+PEERROUTES=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=no
+NAME="System {{ ansible_eth1.device }}"

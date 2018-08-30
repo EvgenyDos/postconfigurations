@@ -1,0 +1,44 @@
+---
+- name: PostConfigurations Servers
+  hosts: vagrant
+  gather_facts: true
+  become: true
+  become_user: root
+#  vars_files:
+#    - vaults/backup
+
+  roles:
+  - role: updates
+    tags: [updates]
+  - role: rpm
+    tags: [rpm]
+  - role: auth
+    tags: [auth]
+  - role: firewalld
+    tags: [firewall]
+  - role: ntp
+    tags: [ntp]
+  - role: resolv-conf
+    tags: [resolf]
+  - role: selinux
+    tags: [selinux]
+  - role: static-ip
+    tags: [static]
+  - role: hostname
+    tags: [hostname]
+  - role: common
+    tags: [common]
+  - role: ipv6
+    tags: [ipv6]
+  - role: sshd
+    tags: [sshd]
+#  - role: iptables
+#    tags: [iptables]
+  - role: rsyslog
+    tags: [rsyslog]
+  - role: users
+    tags: [users]
+  - role: akfgen
+    tags: [akfgen]
+  - role: ciscat
+    tags: [ciscat]

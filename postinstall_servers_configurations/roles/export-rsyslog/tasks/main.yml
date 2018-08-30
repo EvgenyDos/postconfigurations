@@ -1,0 +1,34 @@
+---
+- name: Ensure rsyslog is installed.
+  yum:
+    name: rsyslog
+    state: present
+  tags:
+    - rsyslog
+
+#- name: Copy additional configuration
+#  template:
+#    src: network.conf.j2
+#    dest: /etc/rsyslog.d/network.conf
+#    owner: root
+#    group: root
+#    mode: 0644
+#  tags:
+#    - install
+#    - configure
+
+
+- name: add export logs to rsyslogserver
+  lineinfile:
+    path: /etc/rsyslog.conf
+    line: '*.* @@log.sys.toolsams1.cloudsys.tmcs:514'
+  tags:
+    - rsyslog
+
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    enabled: yes
+    state: restarted
+  tags:
+    - rsyslog

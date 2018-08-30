@@ -1,0 +1,12 @@
+[vagrant]
+127.0.0.1 ansible_port=2000
+#127.0.0.1 ansible_port=3000
+
+[vagrant:vars]
+ansible_user=dos
+ansible_ssh_pass=dos
+host_key_checking = False
+ANSIBLE_HOST_KEY_CHECKING=False
+#ansible_ssh_private_key_file=~/.ssh/mykey1.pem
+
+### Dont forget to run export 'ANSIBLE_HOST_KEY_CHECKING=False' if you use password+login for ssh access 

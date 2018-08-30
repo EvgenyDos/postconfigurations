@@ -1,0 +1,26 @@
+---
+users:
+  - username: rwebb
+    pub_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQD1Kfe3qUU5qvodoNUV5J1sAUgP+e1fdNrKe+RlcbZ+BGZo/DvvBHDBxSz5k9AoMzZ3qpHXC5fIBcnlePwdD0VgLhmTvDDM6kjOw3J4
+    use_sudo: true
+    has_email: true
+    email_addr: rick.webb@ticketmaster.co.uk
+  - username: bdixie
+    pub_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZMDnuiiRo0EXQLWA3FGhPATbHZpTuQTyDXTfkcbB3nljM+YHbyyurqMe4kkplyZn92Lj0r3rkA9vWqQxRu/i5YT+wuRbcoRolQbJk
+    use_sudo: true
+    has_email: true
+    email_addr: bruce.dixie@ticketmaster.co.uk
+  - username: mrowell
+    pub_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDRhaJTZ1GU/5MX+FNAFT5axWNVjOATar1vBVLEsLeaAiklc+y6NOm8vgOOOVEyOHP37Hum/j7iYg7JhYylBcCru4WW4L6z6wHZPDHw
+    use_sudo: true
+    has_email: true
+    email_addr: mike.rowell@ticketmaster.co.uk
+  - username: rcastrogiovanni
+    pub_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCxT9+cYytYElaTFwR3bH1oJh3wx84Aq2vKTr9Y/9D7LXBL9DNFErwMVqFUOwY/5XmoSRvjBxfC7bkQA35H7uvRS3EE2DaTPw5ufZ6+
+    use_sudo: true
+    has_email: true
+    email_addr: roberto.castrogiovanni@ticketmaster.co.uk
+  - username: ipi
+    pub_key: "#"
+    use_sudo: true
+    has_email: false

@@ -1,0 +1,61 @@
+---
+- name: install packages
+  yum:
+    name: "{{ item }}"
+  with_items:
+    - openssh-server
+  tags:
+    - sshd
+
+- name: 5.2 Ensure SSH access is limited
+  copy:
+    dest: /etc/ssh/sshd_config
+    src: sshd_config
+    mode: 0600
+    owner: root
+    group: root
+  notify: restart_sshd
+  tags:
+    - sshd
+
+- name: 5.2.1 Ensure permissions on /etc/ssh/sshd_config are configured
+  file:
+    path: "/etc/ssh/sshd_config"
+    owner: root
+    group: root
+    mode: 0600
+  tags:
+    - sshd
+
+- name: 5.2.15 Ensure SSH warning banner is configured
+  copy:
+    dest: /etc/issue.net
+    src: issue.net
+    mode: 0644
+    owner: root
+    group: root
+  tags:
+    - sshd
+
+- name: allow root Auth
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '#PermitRootLogin yes'
+    replace: 'PermitRootLogin yes'
+  tags:
+    - auth
+
+- name: allow root pwd Auth
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: 'PasswordAuthentication no'
+    replace: 'PasswordAuthentication yes'
+  tags:
+    - auth
+
+- name: restart sshd
+  service:
+    name: sshd
+    state: restarted
+  tags:
+    - auth

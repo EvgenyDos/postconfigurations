@@ -1,0 +1,20 @@
+-hosts: acs-manager
+
+ vars:
+
+    mysql\_root\_password: Cl0ud5tack
+    mysql\_cloud\_password: Cl0ud5tack
+    tmp\_nfs\_path: /mnt/secondary
+    sec\_nfs\_ip: IP\_OF\_YOUR\_SECONDARY\_STORAGE
+    sec\_nfs\_path: PATH\_TO\_YOUR\_SECONDARY\_STORAGE\_MOUNT
+
+
+ roles:
+
+   – mysql
+   – cloudstack-manager
+
+ tasks:
+
+   – include: /etc/ansible/roles/cloudstack-manager/tasks/setupdb.yml
+   – include: /etc/ansible/roles/cloudstack-manager/tasks/seedstorage.yml

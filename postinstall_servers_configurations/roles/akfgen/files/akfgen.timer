@@ -1,0 +1,10 @@
+[Unit]
+Description=AKFGEN Timer
+
+[Timer]
+OnBootSec=0
+OnUnitActiveSec=1h
+Unit=akfgen.service
+
+[Install]
+WantedBy=multi-user.target

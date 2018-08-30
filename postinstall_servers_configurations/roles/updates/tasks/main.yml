@@ -1,0 +1,24 @@
+---
+
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+  tags:
+    - updates
+
+- name: Copy Ticketmaster Yum repo info file
+  copy:
+   src: ../../../templates/CentOS-ticketmaster.repo
+   dest: /etc/yum.repos.d/CentOS-ticketmaster.repo
+   force: yes
+  tags:
+    - updates
+
+- name: Copy Yum config file
+  copy:
+   src: ../../../templates/yum.conf
+   dest: /etc/yum.conf
+   force: yes
+  tags:
+    - updates

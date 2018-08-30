@@ -1,0 +1,4 @@
+---
+minkeys: 0
+targets:
+  /home/ipi/.ssh/authorized_keys: ["intl-techops-ipi"]

@@ -1,0 +1,5 @@
+- name: cloudstack-setup-databases
+command: /usr/bin/cloudstack-setup-databases cloud:{{mysql\_cloud\_password }}@localhost –deploy-as=root:{{mysql\_root\_password }}
+
+- name: Setup CloudStack manager
+command: /usr/bin/cloudstack-setup-management

@@ -1,0 +1,15 @@
+---
+- name: install tools
+  yum:
+    name: "{{ item }}"
+  with_items:
+    - vim
+    - traceroute
+  tags:
+    - common
+
+- name: set timezone to UTC
+  timezone:
+    name: Etc/UTC
+  tags:
+    - common
