@@ -1,12 +1,12 @@
 It is Ansible playbooks. They were tested with CentOS 7.
-Playbooks are available via https://git.tmaws.io/ipi/ansible-kickstart
+Playbooks are available via https://git.
 
 This Repo included list of ansible playbooks:
 - Postinstall_servers_configurations
 - Cloudstack_compute_install_ansible
 - Baremetal_servers_installation
 
-The conf task number is https://contegixapp1.livenation.com/jira/browse/IPI-454 (Child of IPI-439)
+The conf task number is https:/
 
 How to use:
 cd postinstall_servers_configurations/
