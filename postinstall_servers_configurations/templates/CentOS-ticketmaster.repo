@@ -2,7 +2,7 @@
 
 [ticketmaster]
 name=Ticketmaster
-baseurl=http://repo1.int.toolsams1.cloudsys.tmcs/CentOS/ticketmaster/
+baseurl=http://rep---tmaster/
 gpgcheck=0
 enabled=1
 proxy=_none_
