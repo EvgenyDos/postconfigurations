@@ -7,8 +7,8 @@
     - vim
     - traceroute
     - node_exporter
-    - teleport
-    - sdfsfsd
+#    - teleport
+#    - sdfsfsd
   tags:
     - rpm
 

@@ -1,20 +1,18 @@
-It is Ansible playbooks. They were tested with CentOS 7.
-Playbooks are available via https://git.
+These are Ansible playbooks. They were tested with CentOS 7.
+Playbooks are available via https://git.tmaws.io/ipi/ansible-kickstart
 
-This Repo included list of ansible playbooks:
+This Repo included 2 ansible playbooks:
 - Postinstall_servers_configurations
-- Cloudstack_compute_install_ansible
-- Baremetal_servers_installation
+- Cloudstack
 
-The conf task number is https:/
+1.) Postinstall_servers_configurations roles:
+The conf task number is https://contegixapp1.livenation.com/jira/browse/IPI-454 (Child of IPI-439)
 
 How to use:
 cd postinstall_servers_configurations/
 ansible-playbook main.yml -i inventory	(fill list of postinstal roles)
 ansible-playbook main.yml -i inventory -t rsyslog
 ansible-playbook main.yml -i inventory -t updates,rsyslog,rpm
-
-1.) Postinstall_servers_configurations roles:
 
 - updates:	*	*	*	Install all latest updates on a system, Adding the internal ticketmaster repositaries, Adding the proxy parameters in yum.conf.
 - rpm:		*	*	*	Install additional RPM packages on a system.
@@ -35,16 +33,30 @@ ansible-playbook main.yml -i inventory -t updates,rsyslog,rpm
 - akfgen:	*       *       *       Add Ticketmaster Repo,Install and configure AKFGEN service
 - ciscat:	*       *       *       CISCAT-4.1 Configure System Accounting (service, cron, hosts.allow, configfile)
 
-2.) Cloudstack_compute_install_ansible roles:
+2.) Cloudstack roles:
 
- - comming soon
- - comming soon
- - comming soon
+This playbook can be used for eazy cloudstack controllers installation.
+It can be used for 2-controller configurations. Roles were tested with CentOS 7.
+Strongly recomended to run "Postinstall_servers_configurations roles" before "Cloudstack roles" to prepare servers for internal infrastrusture
+The main part of roles based on https://contegixapp1.livenation.com/confluence/pages/viewpage.action?pageId=150345377
+The JIRA task is https://contegixapp1.livenation.com/jira/browse/IPI-389
 
-3.) Baremetal_servers_installation: (do we need it?)
+How to use:
 
- - comming soon
- - comming soon
- - comming soon
+### This way for cleaning server (remove rpms,directories,configs,db ...)
+cd cloudstack/
+ansible-playbook remove-all-installation.yml -i inventory
 
-Please do a reverse lookup on the assigned IP address and set the hostname to that
+### This way to install cloudstack clusters on new servers
+cd cloudstack/
+ansible-playbook main.yml -i inventory
+
+Some notes:
+
+* - NFS mount for /var/lib/mysql is ready, it is disabled now. 2 controllers cant work with the same /var/lib/mysql on the same time. Mariadb cluster are working as one synked cluster.
+
+
+2. Set the snapdir-access property to false on that FlexVol until Mariadb initializes the datadir (or it will fail thinking it's not empty)
+ - is that nfs share /var/lib/mysql ?
+6. roleid ?
+7. check "Disable SNI" part

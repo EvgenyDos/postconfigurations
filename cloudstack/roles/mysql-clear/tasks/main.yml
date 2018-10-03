@@ -1,0 +1,13 @@
+---
+- name: stop mariadb
+  shell: systemctl stop mariadb
+  ignore_errors: true
+- name: remove mysql RPMs
+  shell: rpm -e mariadb-server mariadb MySQL-python ucarp cloudstack-mysql-ha cloudstack-management cloudstack-mysql-ha mysql-connector-java mysql-connector-python cloudstack-usage cloudstack-management
+  ignore_errors: true
+- name: remove old cnf configs
+  shell: rm -rf /etc/my.cnf* 
+  ignore_errors: true
+- name: remove /var/lib/mysql*
+  shell: rm -rf /var/lib/mysql*
+  ignore_errors: true

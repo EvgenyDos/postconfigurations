@@ -1,0 +1,7 @@
+---
+- name: service ucarp@vip-001 start
+  service:
+    name: ucarp@vip-001.service
+    state: restarted
+    enabled: yes
+  ignore_errors: true

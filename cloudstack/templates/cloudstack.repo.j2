@@ -1,0 +1,27 @@
+[cloudstack-{{ CSVERSION }}]
+name=cloudstack-{{ CSVERSION }}
+baseurl=http://repo1.int.toolsams1.cloudsys.tmcs/Cloudstack/{{ CSVERSION }}/latest/
+enabled=1
+gpgcheck=0
+proxy=_none_
+
+[cloudstack-utils]
+name=cloudstack-layest
+baseurl=http://repo1.int.toolsams1.cloudsys.tmcs/CentOS/ticketmaster/latest/
+enabled=1
+gpgcheck=0
+proxy=_none_
+
+[mariadb]
+name=mariadb
+baseurl=http://repo1.int.toolsams1.cloudsys.tmcs/MariaDB/10.2/latest/
+enabled=1
+gpgcheck=0
+proxy=_none_
+
+[Centos7.4]
+name=new
+baseurl=http://repo1.int.toolsams1.cloudsys.tmcs/CentOS/7.4/
+gpgcheck=0
+enabled=1
+proxy=_none_

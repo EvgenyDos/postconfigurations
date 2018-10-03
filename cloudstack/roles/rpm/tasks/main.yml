@@ -1,0 +1,8 @@
+---
+
+- name: Install the required RPMs (ansbible should have already setup internal Yum repositories)
+  yum:
+    name: "{{ packages }}"
+    state: installed
+  tags:
+    - rpm

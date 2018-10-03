@@ -1,0 +1,9 @@
+---
+- name: Setup database on first controller
+  command: cloudstack-setup-databases cloud:{{ clouduserpassword }} --deploy-as=root:{{ clouduserpassword }} -i 10.80.26.76
+
+- name:  cloudstack-setup-management
+  shell: cloudstack-setup-management
+
+- name: Start cloudstack-management service
+  action: service name=cloudstack-management state=restarted

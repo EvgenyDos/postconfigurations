@@ -1,0 +1,34 @@
+---
+- name: add db.cloud.host to /etc/cloudstack/management/db.properties
+  lineinfile:
+    path: /etc/cloudstack/management/db.properties
+    regexp: '^db.cloud.host'
+    line: 'db.cloud.host={{ mysql_replication_master }}'
+
+- name: add db.cloud.initialTimeout to /etc/cloudstack/management/db.properties
+  lineinfile:
+    path: /etc/cloudstack/management/db.properties
+    regexp: '^db.cloud.initialTimeout'
+    line: 'db.cloud.initialTimeout=300'
+
+- name: add db.ha.enabled to /etc/cloudstack/management/db.properties
+  lineinfile:
+    path: /etc/cloudstack/management/db.properties
+    regexp: '^db.ha.enabled'
+    line: 'db.ha.enabled=true'
+
+- name: add db.cloud.slaves to /etc/cloudstack/management/db.properties
+  lineinfile:
+    path: /etc/cloudstack/management/db.properties
+    regexp: '^db.cloud.slaves'
+    line: 'db.cloud.slaves={{ mysql_replication_slave }}'
+
+#- name: Run cloudstack-setup-management
+#  shell: "cloudstack-setup-management --no-start"
+#  register: cloudstack-setup-management --no-start_output
+
+#- name: service cloudstack-management.service start
+#  service:
+#    name: cloudstack-management.service
+#    state: restarted
+

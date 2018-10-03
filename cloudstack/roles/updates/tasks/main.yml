@@ -1,0 +1,22 @@
+---
+
+- name: Copy Ticketmaster Yum repo info file
+  template:
+   src: ../../../templates/cloudstack.repo.j2
+   dest: /etc/yum.repos.d/cloudstack.repo
+   force: yes
+  tags:
+    - updates
+
+- name: yum install yum-utils
+  command: yum install yum-utils -y
+
+- name: yum-complete-transaction --cleanup-only
+  command: yum-complete-transaction --cleanup-only
+
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+  tags:
+    - updates

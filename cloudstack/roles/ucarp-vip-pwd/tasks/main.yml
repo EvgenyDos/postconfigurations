@@ -1,0 +1,28 @@
+---
+- name: create file /etc/ucarp/vip-001.pwd
+  file:
+    dest: /etc/ucarp/vip-001.pwd
+    state: touch
+
+- name: Copy CORRECTED ucarp ( https://bugzilla.redhat.com/show_bug.cgi?id=1568599 )
+  copy:
+    src: templates/ucarp
+    dest: /usr/libexec/ucarp/ucarp
+
+- name: add Password to /etc/ucarp/vip-001.pwd
+  lineinfile:
+    path: /etc/ucarp/vip-001.pwd
+    line: '{{ PASSWORD }}'
+
+- name: service ucarp@001 restart
+  service:
+    name: ucarp@vip-001.service
+    state: restarted
+    enabled: yes
+  ignore_errors: yes
+
+- name: service haproxy rerestart
+  service:
+    name: haproxy
+    state: restarted
+    enabled: yes

@@ -1,0 +1,15 @@
+---
+- name: Copy template VIP-001"
+  template:
+    src: templates/vip-001.slave.j2
+    dest: /etc/ucarp/vip-001.conf
+  tags:
+    - register-ucarp-vip
+
+- name: add VIP_ADDRESS to /etc/ucarp/vip-001.conf
+  lineinfile:
+    path: /etc/ucarp/vip-001.conf
+    regexp: '^VIP_ADDRESS='
+    line: 'VIP_ADDRESS={{ mysql_replication_vip }}'
+  tags:
+    - register-ucarp-vip

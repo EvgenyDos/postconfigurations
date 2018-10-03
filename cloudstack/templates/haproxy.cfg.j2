@@ -1,0 +1,43 @@
+global
+    log         127.0.0.1 local2
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+    stats socket /var/lib/haproxy/stats
+    tune.ssl.default-dh-param 2048
+ 
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    120s
+    timeout queue           1m
+    timeout connect         30s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 30s
+    timeout check           30s
+    maxconn                 3000
+    stats enable
+    stats uri /stats
+    balance {{ balancetype }}
+ 
+frontend localhost
+#    bind *:443 ssl crt /etc/haproxy/cstack-prod.<<cluster>>.tktm.io.pem
+    default_backend app
+ 
+backend app
+    balance {{ balancetype }}
+    cookie WEBSVR insert
+    http-request set-header X-Forwarded-Proto https if  { ssl_fc }
+    rspirep ^Location:\ http://(.*):8080(.*)  Location:\ https://\1:443\2   if  { ssl_fc }
+    server ctl1 {{ haproxy_server1 }}:{{ haproxy_port }} cookie 1 check
+    server ctl2 {{ haproxy_server2 }}:{{ haproxy_port }} cookie 2 check

@@ -1,0 +1,7 @@
+---
+
+- name: change "bind.interface=::" on vars cs_service_listen_ip_slave param into SLAVE /etc/cloudstack/management/server.properties
+  lineinfile:
+    path: /etc/cloudstack/management/server.properties
+    regexp: 'bind.interface=::'
+    line: 'bind.interface={{ cs_service_listen_ip_slave }}'

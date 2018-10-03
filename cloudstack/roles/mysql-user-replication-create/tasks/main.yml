@@ -1,0 +1,54 @@
+---
+- name: create user
+  command: mysql -uroot -p"{{ mysql_root_password }}" -e "CREATE USER '"{{ masteruser }}"'@'localhost' IDENTIFIED BY '"{{ replication_password }}"';"
+  ignore_errors: true
+
+- name: Create and grant cloud-repl user permissions
+  command: mysql -uroot -p{{ mysql_root_password }} -e "grant replication slave on *.* to '{{ masteruser }}'@'{{ mysql_replication_master }}' identified by '{{ replication_password }}';"
+#  when: slave != 'None' and slave != {{ master }}
+
+- name: Create and grant cloud-repl user permissions
+  command: mysql -uroot -p{{ mysql_root_password }} -e "grant replication slave on *.* to '{{ masteruser }}'@'{{ mysql_replication_slave }}' identified by '{{ replication_password }}';"
+#  when: slave != 'None' and slave != {{ master }}
+
+##added root GRANT external access
+- name: root GRANT external access
+  command: mysql -uroot -p{{ mysql_root_password }} -e "use mysql; GRANT ALL PRIVILEGES ON *.* TO root@'%' IDENTIFIED BY '{{ replication_password }}' WITH GRANT OPTION;"
+
+- name: SET PASSWORD FOR {{ masteruser }} on {{ mysql_replication_master }}
+  command: mysql -uroot -p{{ mysql_root_password }} -e "SET PASSWORD FOR '{{ masteruser }}'@'{{ mysql_replication_master }}' = PASSWORD('{{ replication_password }}');"
+
+- name: SET PASSWORD FOR {{ masteruser }} on {{ mysql_replication_slave }}
+  command: mysql -uroot -p{{ mysql_root_password }} -e "SET PASSWORD FOR '{{ masteruser }}'@'{{ mysql_replication_slave }}' = PASSWORD('{{ replication_password }}');"
+
+## troubleshooting cs
+#- name: grant all on cloud.* 
+#  command: mysql -uroot -p{{ mysql_root_password }} -e "grant all on cloud.* to cloud@'{{ mysql_replication_master }}' identified by '{{ replication_password }}';"
+
+- name: flush privileges
+  command: mysql -uroot -p{{ mysql_root_password }} -e "flush privileges;"
+#  when: slave != 'None' and slave != {{ master }}
+
+- name: flush tables
+  command: mysql -uroot -p{{ mysql_root_password }} -e "flush tables with read lock;"
+#  when: slave != 'None' and slave != {{ master }}
+
+- name: unlock tables
+  command: mysql -uroot -p{{ mysql_root_password }} -e "unlock tables;"
+#  when: slave != 'None' and slave != {{ master }}
+
+#- name: Backup Master DB
+#  command: echo "Temporary disabled"
+#  command: mysqldump -u root -p{{ mysql_root_password }} --all-databases > /tmp/dbdump.db
+#  when: slave != 'None' and slave != {{ master }}
+
+#- name: Restore Backup to Slave
+#  command: mysql -uroot -p{{ mysql_root_password }} -h {{ mysql_replication_slave }} < /tmp/dbdump.db
+#  when: slave != 'None' and slave != {{ master }}
+#  ignore_errors: yes
+
+- name: mysql slave stop
+  command: mysql -uroot -p{{ mysql_root_password }} -e "STOP ALL SLAVES;"
+
+- name: mysql slave stop
+  command: mysql -uroot -p{{ mysql_root_password }} -e "reset master;"

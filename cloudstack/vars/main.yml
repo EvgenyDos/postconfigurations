@@ -1,0 +1,77 @@
+---
+### install rpm's
+packages:
+  - cloudstack-management
+  - cloudstack-usage
+#  - cloudstack-mysql-ha
+  - cloudstack-common
+  - mariadb-server
+  - mariadb
+  - keepalived
+  - haproxy
+  - MySQL-python
+  - ucarp
+  - git
+  - nfs-utils
+  - python-pip
+
+CSVERSION: 4.11
+
+###extension rpms ## CHECK versions
+# this RPMs will take from http://maven.platform.tm.tmcs:8081/nexus/content/repositories/releases/com/ticketmaster/techops-infra/cloudstack/
+ticketmaster_api_extensions: ticketmaster-api-extensions-0.15.0-1.x86_64.rpm
+ticketmaster_xen_migration: ticketmaster-xen-migration-0.16.3-1.x86_64.rpm
+
+ldap_pass: bokarev
+
+### mysql part
+replications_database: unixmen
+mysql_root_password: centos
+clouduserpassword: centos
+replication_password: centos
+mysqlmode: changemaster
+mysql_replication_master: 10.10.10.10
+mysql_replication_slave: 10.10.10.11
+mysql_replication_vip: 10.10.10.12
+masterlogfile: mysql-bin.000001
+masteruser: replication
+masterlogpos: 245
+loginuser: root
+cloud_password: secret
+LetsEncryptCreds: example.com
+CSDOM: cstack-prod.example.com
+nfs_share: dos-ansible-server.sys.toolsams1.cloudsys.tmcs:/sql
+nfs_share_mount_path: /var/lib/mysql
+nfs_opts: rw
+backup_path: /tmp/dbdump.db
+
+### VIP part for UCARP
+bindinterfacelocal: eth0
+###ID: 001
+#VIP_ADDRESS: 10.10.10.12
+BIND_INTERFACE: cloudbr0
+#SOURCE_ADDRESS: 10.10.10.13
+PASSWORD: securepassword
+roleid: 999
+
+AWS_ACCESS_KEY_ID: LetsEncryptCreds
+AWS_SECRET_ACCESS_KEY: LetsEncryptCreds
+
+##HAPROXY
+haproxy_port: 8080
+haproxy_server1: 10.10.10.10
+haproxy_server2: 10.10.10.11
+balancetype: roundrobin
+
+##CS params
+cs_service_listen_ip_master: 10.10.10.10
+cs_service_listen_ip_slave: 10.10.10.11
+scrules:
+ - startVirtualMachine
+ - stopVirtualMachine
+ - rebootVirtualMachine
+ - scaleVirtualMachine
+ - list*
+ - tm*
+ - registerUserKeys
+ - queryAsyncJobResult

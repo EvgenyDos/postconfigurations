@@ -1,0 +1,6 @@
+---
+- name: install the Cloudmonkey CLI tool
+  command: pip install git+https://github.com/apache/cloudstack-cloudmonkey.git@5.3
+
+- name: If you still have SSL problems after upgrading cloudmonkey, make sure `requests[security]` is installed and up to date.
+  command: pip install --upgrade "requests[security]"

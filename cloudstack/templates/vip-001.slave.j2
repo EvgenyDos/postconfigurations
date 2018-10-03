@@ -1,0 +1,6 @@
+ID=001
+VIP_ADDRESS="{{ mysql_replication_vip }}"
+BIND_INTERFACE="{{ bindinterfacelocal }}"
+SOURCE_ADDRESS="{{ mysql_replication_slave }}"
+OPTIONS="-k 10 --shutdown"
+PASSFILE="/etc/ucarp/vip-001.pwd"

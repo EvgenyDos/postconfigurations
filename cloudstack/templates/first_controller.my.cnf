@@ -1,0 +1,25 @@
+[mysqld]
+
+### added dos ## unixmen is the database name to be replicated to the Slave system
+log-basename=master
+binlog-do-db=unixmen
+bind-address=0.0.0.0
+###
+
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+symbolic-links=0
+innodb_rollback_on_timeout=1
+innodb_lock_wait_timeout=600
+max_connections=350
+log-bin=mysql-bin
+binlog-format=ROW
+expire_logs_days=10
+max_binlog_size=100M
+server_id=1
+bind-address=0.0.0.0
+[mysqld_safe]
+log-error=/var/log/mariadb/mariadb.log
+pid-file=/var/run/mariadb/mariadb.pid
+# include all files from the config directory
+!includedir /etc/my.cnf.d

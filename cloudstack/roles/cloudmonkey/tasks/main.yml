@@ -1,0 +1,3 @@
+---
+- name: install cloudmonkey via pip
+  command: pip install cloudmonkey

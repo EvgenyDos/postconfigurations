@@ -1,0 +1,38 @@
+---
+- name: Install the required RPMs (ansbible should have already setup internal Yum repositories)
+  yum:
+    name: nfs-utils
+    state: installed
+  tags:
+    - sql-nfs-share
+
+- name: Ensure rpcbind is running (CentOS)
+  service:
+    name: rpcbind
+    state: started
+    enabled: yes
+  tags:
+    - sql-nfs-share
+
+- name: Ensure "{{ nfs_share_mount_path }}" directory exists
+  file:
+    path: "{{ nfs_share_mount_path }}"
+    state: directory
+    owner: mysql
+  tags:
+    - sql-nfs-share
+
+#- shell: if [ -z "$nfsoptions" ]; then  echo rw,sync,nfsvers=3; else echo $nfsoptions; fi
+#  register: _nfsopts
+#  sudo: false
+#  connection: local
+
+- name: configure /etc/fstab on clients
+  mount:
+    src: "{{ nfs_share }}"
+    fstype: nfs
+    path: "{{ nfs_share_mount_path }}"
+    opts: "{{ nfs_opts }}"
+    state: mounted
+  tags:
+    - sql-nfs-share

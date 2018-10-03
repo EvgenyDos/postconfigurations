@@ -1,0 +1,11 @@
+---
+- name: Copy my.cnf for First controller Cloudstack
+  copy:
+    src: ../../../templates/first_controller-one.my.cnf
+    dest: /etc/my.cnf
+
+#- name: start mysql service
+#  service:
+#    name: mariadb
+#    state: restarted
+#    enabled: yes

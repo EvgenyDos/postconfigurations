@@ -1,0 +1,7 @@
+---
+- name: Setup database on first controller
+  command: cloudstack-setup-databases cloud:{{ clouduserpassword }} --deploy-as=root:{{ replication_password }} -i {{ mysql_replication_vip }}
+
+- name: Start cloudstack-management service
+  action: service name=cloudstack-management state=restarted
+# when: slave != 'None'

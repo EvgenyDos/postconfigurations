@@ -1,0 +1,127 @@
+---
+- name: CloudStack server installation
+  hosts: cscontrollers
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: updates
+  - role: rpm
+
+- name: copy mysql configs on first controller
+  hosts: first-controller
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: mysql-config-first
+  - role: mysql-restart
+
+- name: copy mysql configs on second controller
+  hosts: second-controller
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: mysql-config-second
+  - role: mysql-restart
+
+- name: setup root password on all nodes
+  hosts: cscontrollers
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: mysql-root-password
+
+- name: Install mysql-user-replication-access to each server
+  hosts: cscontrollers
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: mysql-user-replication-create
+
+- name:  mysql master determine
+  hosts: first-controller
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: mysql-replications-database-create
+  - role: mysql-master-determine
+
+- name:  mysql slave determine
+  hosts: second-controller
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: mysql-slave-determine
+
+- name:  Run First controller
+  hosts: first-controller
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: run-first-cs
+
+- name:  Run First controller
+  hosts: first-controller
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: run-second-cs
+
+- name: Register the master VIP setup its UCARP entry. Source adress must match each controller IP
+  hosts: first-controller
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: register-ucarp-vip-first
+  - role: ucarp-vip-pwd
+  - role: ucarp-restart
+
+- name: Register the slave VIP setup its UCARP entry. Source adress must match each controller IP
+  hosts: second-controller
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: register-ucarp-vip-second
+  - role: ucarp-vip-pwd
+  - role: ucarp-restart
+
+- name: tunning some of cloudstack/management/db.properties (need check this part)
+  hosts: cscontrollers
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: cs-db-properties
+  - role: haproxy-configure
+
+- name: Create tmuser role, Add LDAP configuration on port 636
+  hosts: cscontrollers
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: ldap-config-cert
+
+- name: Install our API extension and migration code  (version to change)
+  hosts: cscontrollers
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: disable-sni
+  - role: extension-rpm
+  - role: cloudmonkey
+  - role: add-cloud-permissions
+  - role: restart-cs
+
+- name: Enable correct LISTEN IP addres for SLAVE cloudstack-management service
+  hosts: second-controller
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: listen-ip-slave-cloudstack
+  - role: restart-cs
+
+- name: Enable correct LISTEN IP addres for MASTER cloudstack-management service
+  hosts: first-controller
+  vars_files:
+    - vars/main.yml
+  roles:
+  - role: listen-ip-master-cloudstack
+  - role: restart-cs

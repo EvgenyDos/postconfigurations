@@ -1,11 +1,11 @@
 ---
-- name: Add Ticketmaster Repo
-  yum_repository:
-    name: Ticketmaster
-    description: Ticketmaster Repo
-    baseurl: http://repo1.int.toolsams1.cloudsys.tmcs/CentOS/ticketmaster/
-  tags:
-    - akfgen
+#- name: Add Ticketmaster Repo
+#  yum_repository:
+#    name: Ticketmaster
+#    description: Ticketmaster Repo
+#    baseurl: http://repo1.int.toolsams1.cloudsys.tmcs/CentOS/ticketmaster/
+#  tags:
+#    - akfgen
 
 - name: Install AKFGEN
   yum:

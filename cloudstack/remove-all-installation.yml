@@ -1,0 +1,26 @@
+---
+###BE CAREFULLY ----- all old mysql data will be destroed (if exist)
+
+- hosts: cscontrollers
+  become: true
+  tasks:
+  - shell: yum clean all
+  - yum:
+      name: "{{ packages }}"
+      state: removed
+  - shell: systemctl stop mariadb ucarp@vip-001.service cloudstack-management cloudstack-usage
+  - shell: rm -rf /etc/my.cnf* 
+  - shell: rm -rf /var/lib/mysql*
+  - shell: rm -rf /etc/ucarp
+  - shell: rm -rf /etc/haproxy/
+  - shell: rm -rf /etc/cloudstack/
+  - shell: rm -rf /etc/ucarp/
+  - shell: rm -rf /etc/yum.repos.d/cloudstack*
+  - shell: rm -rf /root/root.crt
+  - shell: rm -rf /root/KeyStore.jks
+  - shell: rm -rf /root/acme*
+  - shell: rm -rf /root/.acme*
+  - shell: rm -rf /root/*
+  ignore_errors: true
+  vars_files:
+   - vars/main.yml

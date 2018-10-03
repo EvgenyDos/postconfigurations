@@ -1,0 +1,260 @@
+---
+- name: CloudStack server installation
+  hosts: cscontrollers
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: updates
+    tags: [updates]
+  - role: rpm
+    tags: [rpm]
+### It is commented because mariadb cant start on 2 servers with the same NFS catalog
+#  - role: sql-nfs-share
+#    tags: [sql-nfs-share]
+
+- name: copy mysql configs on first controller
+  hosts: first-controller
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: mysql-config-first
+    tags: [mysql-config-first]
+  - role: mysql-restart
+    tags: [mysql-restart]
+
+- name: copy mysql configs on second controller
+  hosts: second-controller
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: mysql-config-second
+    tags: [mysql-config-second]
+  - role: mysql-restart
+    tags: [mysql-restart]
+
+- name: setup root password on all nodes
+  hosts: cscontrollers
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: mysql-root-password
+    tags: [mysql-root-password]
+
+- name: Install mysql-user-replication-access to each server
+  hosts: cscontrollers
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: mysql-user-replication-create
+    tags: [mysql-user-replication-create]
+
+- name:  mysql master determine
+  hosts: first-controller
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: mysql-replications-database-create
+    tags: [mysql-replications-database-create]
+  - role: mysql-master-determine
+    tags: [mysql-master-determine]
+
+
+- name:  mysql slave determine
+  hosts: second-controller
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: mysql-slave-determine
+    tags: [mysql-slave-determine]
+
+- name:  Run First controller
+  hosts: first-controller
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: run-first-cs
+    tags: [run-first-cs]
+
+- name:  Run First controller
+  hosts: first-controller
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: run-second-cs
+    tags: [run-second-cs]
+
+- name: Register the master VIP setup its UCARP entry. Source adress must match each controller IP
+  hosts: first-controller
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: register-ucarp-vip-first
+    tags: [register-ucarp-vip]
+  - role: ucarp-vip-pwd
+    tags: [ucarp-vip-pwd]
+  - role: ucarp-restart
+    tags: [ucarp-restart]
+
+- name: Register the slave VIP setup its UCARP entry. Source adress must match each controller IP
+  hosts: second-controller
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: register-ucarp-vip-second
+    tags: [register-ucarp-vip]
+  - role: ucarp-vip-pwd
+    tags: [ucarp-vip-pwd]
+  - role: ucarp-restart
+    tags: [ucarp-restart]
+
+- name: Generate (or regenerate) certs for the console proxies SVMs and UI using https://github.com/Neilpang/acme.sh
+  hosts: first-controller
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+# this part can be ignored temporary (got approve from Mike)
+#  roles:
+#  - role: aws-serts
+#    tags: [run-first-cs]
+#  - role: haproxy-restart
+#    tags: [haproxy-restart]
+
+- name: tunning some of cloudstack/management/db.properties (need check this part)
+  hosts: cscontrollers
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: cs-db-properties
+    tags: [cs-db-properties]
+#  - role: ucarp-vip-pwd
+#    tags: [ucarp-vip-pwd]
+  - role: haproxy-configure
+    tags: [haproxy-configure]
+
+- name: Install Cloudstack Agent
+  hosts: compute
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+### this part will be used later for compute install configuration
+#  roles:
+#  - role: compute-agent
+#    tags: [compute-agent]
+
+- name: Create tmuser role, Add LDAP configuration on port 636
+  hosts: cscontrollers
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+## it doesnt work - need check
+#  - role: cs-rules
+#    tags: [cs-rules]
+  - role: ldap-config-cert
+    tags: [ldap-config-cert]
+
+
+- name: Install our API extension and migration code  (version to change)
+  hosts: cscontrollers
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: disable-sni
+    tags: [disable-sni]
+  - role: extension-rpm
+    tags: [extension-rpm]
+  - role: cloudmonkey
+    tags: [cloudmonkey]
+  - role: add-cloud-permissions
+    tags: [add-cloud-permissions]
+  - role: restart-cs
+    tags: [restart-cs]
+
+- name: Enable correct LISTEN IP addres for SLAVE cloudstack-management service
+  hosts: second-controller
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: listen-ip-slave-cloudstack
+    tags: [listen-ip-slave-cloudstack]
+  - role: restart-cs
+    tags: [restart-cs]
+
+- name: Enable correct LISTEN IP addres for MASTER cloudstack-management service
+  hosts: first-controller
+  gather_facts: true
+  become: true
+  become_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+  - role: listen-ip-master-cloudstack
+    tags: [listen-ip-master-cloudstack]
+  - role: restart-cs
+    tags: [restart-cs]

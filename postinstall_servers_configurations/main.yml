@@ -1,9 +1,10 @@
 ---
 - name: PostConfigurations Servers
-  hosts: vagrant
+  hosts: ticketmaster
   gather_facts: true
   become: true
   become_user: root
+#  retries: 5
 #  vars_files:
 #    - vaults/backup
 

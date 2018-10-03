@@ -1,0 +1,3 @@
+---
+- name: add SOURCE_ADDRESS to /etc/ucarp/vip-{{ ID }}.conf
+  command: for i in "{{ scrules }}" ; do cs createRolePermission roleid={{ roleid }}  rule=$i permission=allow; done

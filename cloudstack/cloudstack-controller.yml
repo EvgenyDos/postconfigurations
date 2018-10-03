@@ -1,0 +1,421 @@
+---
+
+- hosts: cscontrollers
+  become: true
+  tasks:
+
+  - name: Add Cloudstack Local Repo
+    copy:
+      src: templates/cloudstack.repo
+      dest: /etc/yum.repos.d/cloudstack.repo
+    tags:
+      - intrepo
+
+  - name: upgrade all packages
+    yum:
+      name: '*'
+      state: latest
+    tags:
+      - update
+
+#Add epel-release for repairing dependensies with mysql-connector-python
+  - name: Install epel-relese
+    yum:
+      name: epel-release
+      state: latest
+    tags:
+      - epel
+
+  - name: Install mysql-connector-python
+    yum:
+      name: mysql-connector-python
+      state: latest
+    tags:
+      - packages
+
+  - name: Install a list of packages
+    yum:
+      name: "{{ packages }}"
+    tags:
+      - packages
+
+  - name: Set selinux to permissive
+    command: setenforce 0
+    tags:
+      - selinux
+
+  - name: Set SELinux to permissive
+    selinux:
+      policy: targeted
+      state: permissive
+    tags:
+      - selinux
+
+  vars_files:
+    - vars/main.yml
+
+- hosts: first-controller
+  become: true
+  tasks:
+
+  - name: Copy my.cnf for First controller Cloudstack
+    copy:
+      src: templates/first_controller.my.cnf
+      dest: /etc/my.cnf
+    tags:
+      - mariafirst
+
+  vars_files:
+    - vars/main.yml
+
+- hosts: second-controller
+  become: true
+  tasks:
+  - name: Copy my.cnf for Second controller Cloudstack
+    copy:
+      src: templates/second_controller.my.cnf
+      dest: /etc/my.cnf
+    tags:
+      - mariasecond
+
+  vars_files:
+    - vars/main.yml
+
+- hosts: all
+  become: true
+  tasks:
+  - name: start mysql service
+    service:
+      name: mariadb
+      state: started
+      enabled: yes
+    tags:
+      - mariafirst
+      - mariasecond
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: Check if root password is set
+    shell: >
+      mysqladmin -u root status
+    changed_when: false
+    failed_when: false
+    register: root_pwd_check
+    tags: mariadb
+
+  - name: Set MariaDB root password for the first time (root@localhost)
+    mysql_user:
+      name: root
+      password: "{{ mysql_root_password }}"
+      host: localhost
+      state: present
+    tags: mariadb
+
+  - name: Set MariaDB root password for 127.0.0.1, ::1
+    mysql_user:
+      name: root
+      password: "{{ mysql_root_password }}"
+      host: "{{ item }}"
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+      state: present
+    with_items:
+      - ::1
+      - 127.0.0.1
+  tags: mariadb
+
+  vars_files:
+    - vars/main.yml
+
+- hosts: first-controller
+  become: true
+  tasks:
+
+  - name: start slave on first controller
+    mysql_replication:
+      mode: stopslave
+      login_user: "{{ loginuser }}"
+      login_password: "{{ mysql_root_password }}"
+    tags:
+      - mariafirst
+
+  - name: change master to second controller
+    mysql_replication:
+      mode: "{{ mysqlmode }}"
+      master_host: "{{ mysql_replication_slave }}"
+      master_user: "{{ masteruser }}"
+      master_password: "{{ replication_password }}"
+      master_log_file: "{{ masterlogfile }}"
+      master_log_pos: "{{ masterlogpos }}"
+      login_user: "{{ loginuser }}"
+      login_password: "{{ mysql_root_password }}"
+    tags:
+      - mariafirst
+
+  - name: start slave on first controller
+    mysql_replication:
+      mode: startslave
+      login_user: "{{ loginuser }}"
+      login_password: "{{ mysql_root_password }}"
+    tags:
+      - mariafirst
+
+  vars_files:
+    - vars/main.yml
+
+- hosts: second-controller
+  become: true
+  tasks:
+  - name: start slave on second controller
+    mysql_replication:
+      mode: stopslave
+      login_user: "{{ loginuser }}"
+      login_password: "{{ mysql_root_password }}"
+    tags:
+      - mariasecond
+
+  - name: change master to first controller
+    mysql_replication:
+      mode: "{{ mysqlmode }}"
+      master_host: "{{ mysql_replication_master }}"
+      master_user: "{{ masteruser }}"
+      master_password: "{{ replication_password }}"
+      master_log_file: "{{ masterlogfile }}"
+      master_log_pos: "{{ masterlogpos }}"
+      login_user: "{{ loginuser }}"
+      login_password: "{{ mysql_root_password }}"
+    tags:
+      - mariasecond
+
+  - name: start slave on second controller
+    mysql_replication:
+      mode: startslave
+      login_user: "{{ loginuser }}"
+      login_password: "{{ mysql_root_password }}"
+    tags:
+      - mariasecond
+
+  - name: Copy template VIP-{{ ID }}
+    template:
+      src: templates/vip-001.conf.j2
+      dest: /etc/ucarp/vip-{{ ID }}.conf
+    tags:
+      - vip
+
+  - name: add VIP_ADDRESS to /etc/ucarp/vip-{{ ID }}.conf
+    lineinfile:
+      path: /etc/ucarp/vip-{{ ID }}.conf
+      regexp: '^VIP_ADDRESS='
+      line: 'VIP_ADDRESS={{ mysql_replication_vip }}'
+    tags:
+      - vip
+
+  vars_files:
+    - vars/main.yml
+
+- hosts: first-controller
+  become: true
+  tasks:
+  - name: add SOURCE_ADDRESS to /etc/ucarp/vip-{{ ID }}.conf
+    lineinfile:
+      path: /etc/ucarp/vip-{{ ID }}.conf
+      regexp: '^SOURCE_ADDRESS='
+      line: 'SOURCE_ADDRESS={{ mysql_replication_master }}'
+
+  - name: Run cloudstack-setup-databases on the first controller
+    shell: "cloudstack-setup-databases cloud:{{ cloud_password }}@localhost --deploy-as=root:{{ mysql_root_password }}"
+
+    register: cloudstack-setup-databases_output
+#  - name: Run cloudstack-setup-databases output
+#    debug: msg="{{ cloudstack-setup-databases_output.stdout }}"
+#  - name: Run cloudstack-setup-databases error
+#    debug: msg="{{ cloudstack-setup-databases_output.stderr }}"
+
+####Generating certificates###
+# this part can be ignored temporary (got approve from Mike)
+  - name: Export
+    shell: "export AWS creds for r53"
+
+  - name: Export AWS_ACCESS_KEY_ID
+    shell: "export AWS_ACCESS_KEY_ID={{ LetsEncryptCreds }}"
+
+  - name: clone acme file
+    shell: git clone https://github.com/Neilpang/acme.sh.git
+    ignore_errors: true
+
+  - name: Export
+    shell: "export AWS_SECRET_ACCESS_KEY={{ LetsEncryptCreds }}"
+
+  - name: Generate certs valid for all public IPs for the zone
+    shell: "/root/.acme.sh/acme.sh  --issue --dns dns_aws -d {{ CSDOM }} -d '*.svm.{{ CSDOM }}'"
+    ignore_errors: true      #check with real domain
+
+  - name: Concatenate for HA proxy, cer
+    shell: "cat /root/.acme.sh/{{ CSDOM }}/{{ CSDOM }}.crt > {{ CSDOM }}.pem"
+    ignore_errors: true     #check with real domain
+
+  - name: Concatenate for HA proxy, key
+    shell: "cat /root/.acme.sh/{{ CSDOM }}/{{ CSDOM }}.key >> {{ CSDOM }}.pem"
+    ignore_errors: true     #check with real domain
+
+  - name: Copy cert to the local folder
+    shell: "cp {{ CSDOM }}.pem /etc/haproxy/"
+    ignore_errors: true
+
+  - name: Copy cert to the second controller
+#    shell: "scp {{ CSDOM }}.pem {{ mysql_replication_slave }}:/etc/haproxy/"
+    ignore_errors: true
+
+  vars_files:
+    - vars/main.yml
+
+- hosts: second-controller
+  become: true
+  tasks:
+  - name: add SOURCE_ADDRESS to /etc/ucarp/vip-{{ ID }}.conf
+    lineinfile:
+      path: /etc/ucarp/vip-{{ ID }}.conf
+      regexp: '^SOURCE_ADDRESS='
+      line: 'SOURCE_ADDRESS={{ mysql_replication_slave }}'
+
+  - name: Run cloudstack-setup-databases  on the second controller
+    shell: "cloudstack-setup-databases cloud:{{ cloud_password }}@localhost"
+    register: cloudstack-setup-databases_output
+
+  vars_files:
+    - vars/main.yml
+
+- hosts: all
+  become: true
+  tasks:
+  - name: add db.cloud.host to /etc/cloudstack/management/db.properties
+    lineinfile:
+      path: /etc/cloudstack/management/db.properties
+      regexp: '^db.cloud.host'
+      line: 'db.cloud.host={{ mysql_replication_master }}'
+
+  - name: add db.cloud.initialTimeout to /etc/cloudstack/management/db.properties
+    lineinfile:
+      path: /etc/cloudstack/management/db.properties
+      regexp: '^db.cloud.initialTimeout'
+      line: 'db.cloud.initialTimeout=300'
+
+  - name: add db.ha.enabled to /etc/cloudstack/management/db.properties
+    lineinfile:
+      path: /etc/cloudstack/management/db.properties
+      regexp: '^db.ha.enabled'
+      line: 'db.ha.enabled=true'
+
+  - name: add db.cloud.slaves to /etc/cloudstack/management/db.properties
+    lineinfile:
+      path: /etc/cloudstack/management/db.properties
+      regexp: '^db.cloud.slaves'
+      line: 'db.cloud.slaves={{ mysql_replication_slave }}'
+
+  - name: Run cloudstack-setup-management
+    shell: "cloudstack-setup-management --no-start"
+    register: cloudstack-setup-management --no-start_output
+
+  - name: service cloudstack-management.service start
+    service:
+      name: cloudstack-management.service
+      state: started
+
+  - name: create file /etc/ucarp/vip-{{ ID }}.pwd
+    file:
+      dest: /etc/ucarp/vip-{{ ID }}.pwd
+      state: touch
+
+  - name: add Password to /etc/ucarp/vip-{{ ID }}.pwd
+    lineinfile:
+      path: /etc/ucarp/vip-{{ ID }}.pwd
+      line: 'dev1'
+
+  - name: service ucarp@{{ ID }} start
+    service:
+      name: ucarp@{{ ID }}
+      state: started
+      enabled: yes
+
+  - name: service haproxy restart
+    service:
+      name: haproxy
+      state: restarted
+      enabled: yes
+
+# HAPROXY
+  - name: Copy template ha-proxy
+    copy:
+      src: templates/haproxy.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
+
+  - name: bind *:443 ssl crt in haproxy.cfg
+    lineinfile:
+      path: /etc/haproxy/haproxy.cfg
+      regexp: '^bind *:443 ssl crt'
+      line: 'bind *:443 ssl crt /etc/haproxy/{{ CSDOM }}.pem'
+
+  - name: bind *:443 ssl crt in haproxy.cfg
+    lineinfile:
+      path: /etc/haproxy/haproxy.cfg
+      regexp: '^server ctl1'
+      line: 'server ctl1 cs-ctl1.sys.{{ LetsEncryptCreds }}:8080 cookie 1 check'
+
+  - name: bind *:443 ssl crt in haproxy.cfg
+    lineinfile:
+      path: /etc/haproxy/haproxy.cfg
+      regexp: '^server ctl2'
+      line: 'server ctl2 cs-ctl2.sys.{{ LetsEncryptCreds }}:8080 cookie 2 check'
+
+  vars_files:
+    - vars/main.yml
+
+- hosts: second-controller
+  become: true
+  tasks:
+  - name: add SOURCE_ADDRESS to /etc/ucarp/vip-{{ ID }}.conf
+    command: for i in {{ scrules }} ; do cs createRolePermission roleid=i{{ roleid }}  rule=$i permission=allow; done
+
+  vars_files:
+    - vars/main.yml
+
+
+- hosts: all
+  become: true
+  tasks:
+  - name: Disable SNI for the controller JVM  (because of Infoblox certificates)
+    lineinfile:
+      path: /etc/default/cloudstack-management
+      regexp: '^db.cloud.host'
+      line: '-Djsse.enableSNIExtension=false'
+
+#Cloudstack-infra
+  - name: install ticketmaster-api-extensions
+    yum:
+      name: http://maven.platform.tm.tmcs:8081/nexus/content/repositories/releases/com/ticketmaster/techops-infra/cloudstack/ticketmaster-api-extensions-0.15.0-1.x86_64.rpm
+      state: present
+    ignore_errors: true
+
+  - name: install ticketmaster-xen-migration
+    yum:
+      name: http://maven.platform.tm.tmcs:8081/nexus/content/repositories/releases/com/ticketmaster/techops-infra/cloudstack/ticketmaster-xen-migration-0.16.3-1.x86_64.rpm
+      state: present
+    ignore_errors: true
+
+  - name: service haproxy restart
+    service:
+      name: cloudstack-management
+      state: restarted
+
+  vars_files:
+    - vars/main.yml
+
+#  vars:
+#    mysql_root_password: Cl0ud5tack
+#    replication_password: Cl0ud5tack
+#    mysql_replication_master: 172.28.128.6
+#    mysql_replication_slave: 172.28.128.5
+#    CSDOM: cstack-prod.example.com
+#    LetsEncryptCreds: example.com

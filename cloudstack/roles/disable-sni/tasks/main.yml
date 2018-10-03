@@ -1,0 +1,5 @@
+---
+- name: Disable SNI for the controller JVM  (because of Infoblox certificates)
+  copy:
+    src: ../../../templates/cloudstack-management
+    dest: /etc/default/cloudstack-management
