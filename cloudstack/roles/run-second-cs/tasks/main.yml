@@ -1,7 +1,0 @@
----
-- name: Setup database on second controller
-  command: cloudstack-setup-databases cloud:{{ clouduserpassword }} -i {{ mysql_replication_vip }}
-
-- name: Start cloudstack-management service
-  command: cloudstack-setup-management --no-start
-# when: slave != 'None'

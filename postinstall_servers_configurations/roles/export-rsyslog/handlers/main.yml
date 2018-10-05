@@ -1,7 +1,0 @@
----
-- name: restart rsyslog
-  service: name=rsyslog state=restarted
-
-- name: validate nginx configuration
-  command: rsyslogd -N1
-  changed_when: False

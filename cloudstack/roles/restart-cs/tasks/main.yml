@@ -1,4 +1,0 @@
----
-
-- name: restart sc-services
-  command: systemctl restart cloud-set-guest-password cloudstack-management
